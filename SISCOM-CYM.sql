@@ -1,3 +1,4 @@
+-- creación de BDD
 -- Tabla para productos
 CREATE DATABASE siscom-cym;
 USE ;
