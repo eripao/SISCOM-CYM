@@ -32,11 +32,15 @@ CREATE TABLE productos (
 -- =============================================
 -- TABLA: CLIENTES
 -- =============================================
-CREATE TABLE clientes (
-    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    telefono VARCHAR(15),
-    email VARCHAR(100)
+create table clientes 
+(
+cedula VARCHAR (13) primary key, -- declaramos el identificador foraneo 
+nombre VARCHAR(100),
+fechadenacimiento date,
+tipo CHAR(3),
+email VARCHAR(100),
+direccion VARCHAR(100),
+telefono VARCHAR(13)
 );
 
 -- =============================================
@@ -45,9 +49,9 @@ CREATE TABLE clientes (
 CREATE TABLE ventas (
     id_venta INT AUTO_INCREMENT PRIMARY KEY,
     fecha DATE NOT NULL,
-    id_cliente INT,
+    cedula VARCHAR(13),
     total DECIMAL(10,2),
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+    FOREIGN KEY (cedula) REFERENCES clientes(cedula)
 );
 
 -- =============================================
@@ -93,8 +97,6 @@ CREATE TABLE detalle_factura (
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
 );
 
-
-
 -- =============================================
 -- REGISTROS
 -- =============================================
@@ -118,20 +120,51 @@ INSERT INTO productos (nombre, descripcion, precio_compra, precio_venta, stock, 
 
 
 -- CLIENTES
-INSERT INTO clientes (nombre, telefono, email) VALUES
-('Juan Perez','0991111111','juan@gmail.com'),('Maria Lopez','0992222222','maria@gmail.com'),('Carlos Ruiz','0993333333','carlos@hotmail.com'),('Ana Torres','0994444444','ana@gmail.com'),
-('Luis Vega','0995555555','luis@gmail.com'),('Sofia Mena','0996666666','sofia@yahoo.com'),('Pedro Rios','0997777777','pedro@gmail.com'),('Lucia Paz','0998888888','lucia@gmail.com'),
-('Diego Cruz','0999999999','diego@gmail.com'),('Valeria Soto','0981111111','valeria@gmail.com'),('Miguel Lara','0982222222','miguel@gmail.com'),('Paola Diaz','0983333333','paola@gmail.com'),
-('Jorge Velez','0984444444','jorge@gmail.com'),('Camila Ortiz','0985555555','camila@gmail.com'),('Andres Luna','0986666666','andres@gmail.com'),('Daniela Paredes','0987777777','daniela@gmail.com'),
-('Ricardo Mora','0988888888','ricardo@gmail.com'),('Natalia Peña','0989999999','natalia@gmail.com'),('Oscar Cedeño','0971111111','oscar@gmail.com'),('Fernanda Gil','0972222222','fernanda@gmail.com');
 
+insert into clientes
+values ('0602596587', 'Viviana Perez', '1990-03-24', 'NAT','viviana5@gmail.com','Av. Gaspar de Villarroel N79-813, Carcelén, Quito', '0910647731');
+
+insert into clientes
+values ('1804141479', 'Juan Guaman', '1990-03-24', 'JUR','juan34@gmail.com','Av. De los Shyris N92-345, Carcelén, Quito', '0973666927');
+insert into clientes
+values ('1720477171', 'Betty Bowen', '1990-03-24', 'NAT','betty8@gmail.com','Av. Colón N39-452, Turubamba, Quito', '0976632750');
+insert into clientes
+values ('1802278604', 'Manuel Avalos', '1990-03-24', 'JUR','manuel9@gmail.com','Av. República N18-902, Calderón, Quito', '0934473990');
+
+insert into clientes
+values ('1723006035', 'Soledad Perez', '1990-03-24', 'JUR','soledad6@gmail.com','Av. Gaspar de Villarroel N39-698, Iñaquito, Quito', '0909111159');
+
+insert into clientes
+values ('1720026663', 'Patricio Villacis', '1990-03-24', 'NAT','patricio3@gmail.,com','Calle Whymper N88-718, La Floresta, Quito','0934567990');
+
+insert into clientes
+values ('1758357162', 'Diego Jimenez', '1990-03-24', 'NAT','diego4@gmail.com','Av. Mariana de Jesús N92-284, Quitumbe, Quito', '0978884020');
+
+insert into clientes
+values ('0300885506', 'Fabian Romero', '1990-03-24', 'JUR','fabian1@gmail.com','Calle Whymper N31-522, La Mariscal, Quito', '0961655576');
 
 -- VENTAS
-INSERT INTO ventas (fecha, id_cliente, total) VALUES
-('2025-01-01',1,50),('2025-01-02',2,75),('2025-01-03',3,40),('2025-01-04',4,60),('2025-01-05',5,90),
-('2025-01-06',6,30),('2025-01-07',7,110),('2025-01-08',8,55),('2025-01-09',9,70),('2025-01-10',10,85),
-('2025-01-11',11,45),('2025-01-12',12,65),('2025-01-13',13,95),('2025-01-14',14,80),('2025-01-15',15,120),
-('2025-01-16',16,50),('2025-01-17',17,60),('2025-01-18',18,75),('2025-01-19',19,90),('2025-01-20',20,100);
+INSERT INTO ventas (fecha, cedula, total) VALUES
+('2025-01-01','0602596587',50),
+('2025-01-02','1804141479',75),
+('2025-01-03','1720477171',40),
+('2025-01-04','1802278604',60),
+('2025-01-05','1723006035',90),
+('2025-01-06','1720026663',30),
+('2025-01-07','1758357162',110),
+('2025-01-08','0300885506',55),
+('2025-01-09','0602596587',70),
+('2025-01-10','1804141479',85),
+('2025-01-11','1720477171',45),
+('2025-01-12','1802278604',65),
+('2025-01-13','1723006035',95),
+('2025-01-14','1720026663',80),
+('2025-01-15','1758357162',120),
+('2025-01-16','0300885506',50),
+('2025-01-17','0602596587',60),
+('2025-01-18','1804141479',75),
+('2025-01-19','1720477171',90),
+('2025-01-20','1802278604',100);
 
 
 -- DETALLE_VENTA
@@ -160,9 +193,3 @@ INSERT INTO detalle_factura (id_factura, id_producto, cantidad, precio_unitario,
 (11,11,5,7,35),(12,12,10,3,30),(13,13,1,45,45),(14,14,2,25,50),(15,15,3,22,66),
 (16,16,2,18,36),(17,17,3,9,27),(18,18,2,12,24),(19,19,4,13,52),(20,20,1,40,40);
 
-
--- =============================================
--- CONSULTAS
--- =============================================
-
-select * from clientes;
