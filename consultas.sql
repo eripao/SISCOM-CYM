@@ -257,8 +257,184 @@ INNER JOIN detalle_factura df ON f.id_factura = df.id_factura
 INNER JOIN productos p ON df.id_producto = p.id_producto;
 
 -- *********************
+-- CONSULTA DE INVENTARIO
+-- *********************
+use siscomcym;
+SELECT 
+    p.id_producto,
+    p.nombre AS producto,
+    c.nombre AS categoria,
+    p.stock,
+    p.precio_compra,
+    p.precio_venta,
+    (p.stock * p.precio_compra) AS valor_inventario_costo,
+    (p.stock * p.precio_venta) AS valor_inventario_venta
+FROM productos p
+INNER JOIN categorias c
+    ON p.id_categoria = c.id_categoria
+ORDER BY c.nombre, p.nombre;
+-- ******************
+-- VENTAS Y FACTURAS
+-- ******************
+CREATE VIEW vista_ventas_facturas_union AS
+SELECT 
+    id_venta,
+    fecha,
+    total,
+    'VENTA' AS origen
+FROM ventas
+UNION
+SELECT 
+    f.id_venta,
+    f.fecha_emision,
+    f.total,
+    'FACTURA' AS origen
+FROM facturas f;
+
+select * from vista_ventas_facturas_union;|
+
+-- *****************
+-- TOTAL INVENTARIO
+-- *****************
+
+SELECT 
+    SUM(stock * precio_compra) AS total_invertido,
+    SUM(stock * precio_venta) AS total_potencial_venta
+FROM productos;
+
+-- *************************************
+-- ESTADO DEL INVENTARIO
+-- *************************************
+SELECT 
+    p.id_producto,
+    p.nombre AS producto,
+    c.nombre AS categoria,
+    p.stock,
+    CASE 
+        WHEN p.stock = 0 THEN 'AGOTADO'
+        WHEN p.stock BETWEEN 1 AND 15 THEN 'POR AGOTARSE'
+        ELSE 'STOCK NORMAL'
+    END AS estado_inventario
+FROM productos p
+INNER JOIN categorias c
+    ON p.id_categoria = c.id_categoria
+ORDER BY p.stock ASC;
+
+-- *********************
+-- CONSULTA INVENTARIO -- CON FUNCION UNION
+-- *********************
+CREATE VIEW vista_estado_inventario_union AS
+SELECT 
+    p.id_producto,
+    p.nombre AS producto,
+    c.nombre AS categoria,
+    p.stock,
+    'AGOTADO' AS estado_inventario
+FROM productos p
+INNER JOIN categorias c
+    ON p.id_categoria = c.id_categoria
+WHERE p.stock = 0
+UNION
+SELECT 
+    p.id_producto,
+    p.nombre AS producto,
+    c.nombre AS categoria,
+    p.stock,
+    'POR AGOTARSE' AS estado_inventario
+FROM productos p
+INNER JOIN categorias c
+    ON p.id_categoria = c.id_categoria
+WHERE p.stock BETWEEN 1 AND 5
+UNION
+SELECT 
+    p.id_producto,
+    p.nombre AS producto,
+    c.nombre AS categoria,
+    p.stock,
+    'STOCK NORMAL' AS estado_inventario
+FROM productos p
+INNER JOIN categorias c
+    ON p.id_categoria = c.id_categoria
+WHERE p.stock > 5;
+
+-- CONSULTA: 
+SELECT * FROM vista_estado_inventario_union
+ORDER BY stock;
+
+-- *********************
+-- GROUP BY
+-- *********************
+SELECT 
+    c.nombre AS categoria,
+    COUNT(p.id_producto) AS cantidad_productos,
+    SUM(p.stock) AS total_unidades,
+    SUM(p.stock * p.precio_compra) AS valor_total_compra,
+    SUM(p.stock * p.precio_venta) AS valor_total_venta
+FROM productos p
+INNER JOIN categorias c
+    ON p.id_categoria = c.id_categoria
+GROUP BY c.nombre
+ORDER BY c.nombre;
+
+-- *********************
+-- PARTITION BY
+-- *********************
+use siscomcym;
+SELECT 
+    p.id_producto,
+    p.nombre AS producto,
+    c.nombre AS categoria,
+    p.stock,
+    SUM(p.stock) OVER (PARTITION BY c.nombre) AS stock_total_categoria
+FROM productos p
+INNER JOIN categorias c
+    ON p.id_categoria = c.id_categoria
+ORDER BY c.nombre, p.nombre;
+
+-- *********************
+--  PRODUCTOS VENDIDOS VS STOCK ACTUAL
+-- *********************
+use siscomcym;
+SELECT 
+    p.id_producto,
+    p.nombre AS producto,
+    p.stock AS stock_actual,
+    COALESCE(SUM(dv.cantidad), 0) AS total_vendido,
+    (p.stock - COALESCE(SUM(dv.cantidad), 0)) AS stock_restante,
+    CASE
+        WHEN (p.stock - COALESCE(SUM(dv.cantidad), 0)) = 0 THEN 'AGOTADO'
+        WHEN (p.stock - COALESCE(SUM(dv.cantidad), 0)) BETWEEN 1 AND 13 THEN 'POR AGOTARSE'
+        ELSE 'STOCK NORMAL'
+    END AS estado_inventario
+FROM productos p
+LEFT JOIN detalle_venta dv
+    ON p.id_producto = dv.id_producto
+GROUP BY 
+    p.id_producto,
+    p.nombre,
+    p.stock
+ORDER BY estado_inventario, producto;
+
+-- *********************
+-- CALCULO DE GANANCIAS
+-- *********************
+SELECT 
+    v.id_venta,
+    p.nombre AS producto,
+    dv.cantidad,
+    p.precio_compra,
+    p.precio_venta,
+    (p.precio_venta - p.precio_compra) * dv.cantidad AS ganancia_producto
+FROM ventas v
+INNER JOIN detalle_venta dv
+    ON v.id_venta = dv.id_venta
+INNER JOIN productos p
+    ON dv.id_producto = p.id_producto
+ORDER BY v.id_venta;
+
+-- *********************
 -- CONSULTA
 -- *********************
+use siscomcym;
 SELECT *
-FROM vista_detalle_factura
-WHERE id_factura = 1;
+FROM vista_detalle_factura where estado = 'PENDIENTE';
